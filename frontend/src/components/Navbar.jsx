@@ -13,7 +13,7 @@ export default function Navbar() {
 
   return (
     <header className="nav-animate group sticky top-4 z-50 px-4">
-      <div className="relative mx-auto w-fit">
+      <div className="relative mx-auto w-full md:w-fit">
         {/* Hover glow — invisible by default, fades in behind the whole pill on hover */}
         <div
           aria-hidden
@@ -26,7 +26,7 @@ export default function Navbar() {
   className="flex items-center justify-center"
   onClick={() => setOpen(false)}
 >
-  <img src={logo} alt="Growganic logo" className="h-7 w-auto" />
+  <img src={logo} alt="Growganic logo" className="h-5 w-auto" />
 </Link>
 
           {/* Desktop nav */}
@@ -76,12 +76,10 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             <Link
               to="/"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5"
+              className="flex items-center justify-center"
               onClick={() => setOpen(false)}
             >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" strokeWidth="1" strokeLinecap="round">
-                <path d="M7 7c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4-4 1.8-4 4 1.8 4 4 4 4-1.8 4-4" />
-              </svg>
+              <img src={logo} alt="Growganic logo" className="h-5 w-auto" />
             </Link>
             <button
               className="text-white"
@@ -98,7 +96,7 @@ export default function Navbar() {
               <a
                 key={item.label}
                 href={item.href}
-                className="text-lg font-regular text-white"
+                className="text-base font-regular text-white"
                 onClick={() => setOpen(false)}
               >
                 {item.label}
@@ -111,7 +109,7 @@ export default function Navbar() {
         href="https://calendly.com/growganicmediallc/30min"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-6 py-3 font-semibold text-white transition hover:bg-gray-400"
+        className="mt-8 flex w-full items-center justify-center rounded-full bg-[#765eff] px-6 py-3 text-center font-semibold text-white transition hover:bg-gray-400"
       >
         Book a call
       </a>
