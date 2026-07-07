@@ -6,28 +6,37 @@ import Button from "../ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faBars } from "@fortawesome/free-solid-svg-icons";
 import logo from "../assets/logo.png";
+import { motion } from "framer-motion";
 
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="nav-animate group sticky top-4 z-50 px-4">
-      <div className="relative mx-auto w-full md:w-fit">
+    <>
+      <motion.header
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{
+          duration: 1.9,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="group sticky top-4 z-50 px-4"
+      >
+        <div className="relative mx-auto w-full md:w-fit">
         {/* Hover glow — invisible by default, fades in behind the whole pill on hover */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-x-6 -inset-y-6 -z-10 rounded-full bg-sprout/0 opacity-0 blur-2xl transition-all duration-100 group-hover:bg-sprout/35 group-hover:opacity-40"
-        />
+          className="pointer-events-none absolute -inset-x-6 -inset-y-6 -z-10 rounded-full bg-sprout/0 opacity-0 blur-2xl transition-all duration-100 group-hover:bg-sprout/35 group-hover:opacity-40" />
         <div className="relative flex items-center justify-between gap-3 rounded-full border border-white/10 bg-[#0b0b0d]/90 px-4 py-2.5 shadow-lg shadow-black/30 backdrop-blur-md">
           {/* Logo */}
-         <Link
-  to="/"
-  className="flex items-center justify-center"
-  onClick={() => setOpen(false)}
->
-  <img src={logo} alt="Growganic logo" className="h-5 w-auto" />
-</Link>
+          <Link
+            to="/"
+            className="flex items-center justify-center"
+            onClick={() => setOpen(false)}
+          >
+            <img src={logo} alt="Growganic logo" className="h-5 w-auto" />
+          </Link>
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-2 md:flex">
@@ -45,13 +54,13 @@ export default function Navbar() {
           {/* Book a call button (desktop) */}
           <div className="hidden md:block">
             <a
-        href="https://calendly.com/growganicmediallc/30min"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-5 py-2 font-regular text-white transition hover:bg-gray-400"
-      >
-        Book a call 
-      </a>
+              href="https://calendly.com/growganicmediallc/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-5 py-2 font-regular text-white transition hover:bg-gray-400"
+            >
+              Book a call
+            </a>
           </div>
 
           {/* Mobile menu toggle */}
@@ -63,11 +72,11 @@ export default function Navbar() {
             <FontAwesomeIcon
               icon={open ? faXmark : faBars}
               style={{ color: "rgb(255, 255, 255)" }}
-              size="lg"
-            />
+              size="lg" />
           </button>
         </div>
-      </div>
+        </div>
+      </motion.header>
 
       {/* Mobile full-screen overlay menu */}
       {open && (
@@ -115,6 +124,6 @@ export default function Navbar() {
       </a>
         </div>
       )}
-    </header>
+    </>
   );
 }

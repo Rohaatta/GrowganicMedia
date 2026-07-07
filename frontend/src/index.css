@@ -80,7 +80,7 @@
 
 .nav-animate {
   opacity: 0;
-  animation: navDrop 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: navDrop 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Hero content: neeche se upar slide-in — bilkul blur ke bagair */

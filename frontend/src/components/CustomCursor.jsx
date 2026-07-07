@@ -5,6 +5,9 @@ export default function CustomCursor() {
   const [trail, setTrail] = useState({ x: 0, y: 0 });
   const [hidden, setHidden] = useState(true);
   const [hovered, setHovered] = useState(false);
+  const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+
+if (isTouchDevice) return null;
 
   useEffect(() => {
     const handleMouseMove = (e) => {
