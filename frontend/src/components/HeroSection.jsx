@@ -62,7 +62,9 @@ export default function HeroSection() {
             pointerEvents: "none",
             zIndex: 0,
           }}>
-            <HeroGlow />
+            <div className="h-full w-full origin-center scale-75 sm:scale-100">
+              <HeroGlow />
+            </div>
           </div>
 
           <div style={{
