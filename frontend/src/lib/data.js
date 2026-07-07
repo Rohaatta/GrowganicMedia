@@ -8,7 +8,7 @@ export const heroContent = {
   eyebrow: "Content studio for growing brands",
   headlineLines: [" More Views & Revenue", " Without Spending Hours."],
   subheadline:
-     "Helping busy B2B founders,Coaches and Creators generate qualified leads,Sales and Authority through Automated Content System.",
+     "Helping busy B2B founders, Coaches and Creators generate qualified leads, Sales and Authority through Automated Content System.",
      
   stats: [
     { label: "Videos delivered", value: 420 },
