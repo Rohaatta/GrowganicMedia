@@ -198,7 +198,7 @@ builds authority, and attracts qualified opportunities across every platform."
            <a   href="https://calendly.com/growganicmediallc/30min"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-6 py-3 font-semibold text-white transition hover:bg-gray-400"
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#765eff] px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-400 sm:px-6 sm:py-3 sm:text-base"
             >
               Explore pricing ⟶
             </a>
