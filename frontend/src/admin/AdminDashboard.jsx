@@ -22,17 +22,17 @@ export default function AdminDashboard({ token, username, onLogout }) {
       const headers = { 'Authorization': `Bearer ${token}` };
       
       // Fetch videos
-      const vidRes = await fetch('http://localhost:5000/api/videos');
+      const vidRes = await fetch('https://growganicmedia-backend.vercel.app/api/videos');
       const vidData = await vidRes.json();
       setVideos(Array.isArray(vidData) ? vidData : []);
 
       // Fetch testimonials
-      const testRes = await fetch('http://localhost:5000/api/testimonials');
+      const testRes = await fetch('https://growganicmedia-backend.vercel.app/api/testimonials');
       const testData = await testRes.json();
       setTestimonials(Array.isArray(testData) ? testData : []);
 
       // Fetch inquiries
-      const inqRes = await fetch('http://localhost:5000/api/inquiries', { headers });
+      const inqRes = await fetch('https://growganicmedia-backend.vercel.app/api/inquiries', { headers });
       const inqData = await inqRes.json();
       setInquiries(Array.isArray(inqData) ? inqData : []);
     } catch (err) {
@@ -56,8 +56,8 @@ export default function AdminDashboard({ token, username, onLogout }) {
   const handleSaveVideo = async (e) => {
     e.preventDefault();
     const url = isEditingVideo 
-      ? `http://localhost:5000/api/videos/${videoForm.id}`
-      : 'http://localhost:5000/api/videos';
+      ? `https://growganicmedia-backend.vercel.app/api/videos/${videoForm.id}`
+      : 'https://growganicmedia-backend.vercel.app/api/videos';
     const method = isEditingVideo ? 'PUT' : 'POST';
 
     try {
@@ -84,7 +84,7 @@ export default function AdminDashboard({ token, username, onLogout }) {
   const handleDeleteVideo = async (id) => {
     if (!window.confirm('Are you sure you want to delete this video?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/videos/${id}`, {
+      const res = await fetch(`https://growganicmedia-backend.vercel.app/api/videos/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -106,8 +106,8 @@ export default function AdminDashboard({ token, username, onLogout }) {
   const handleSaveTestimonial = async (e) => {
     e.preventDefault();
     const url = isEditingTest 
-      ? `http://localhost:5000/api/testimonials/${testForm.id}`
-      : 'http://localhost:5000/api/testimonials';
+      ? `https://growganicmedia-backend.vercel.app/api/testimonials/${testForm.id}`
+      : 'https://growganicmedia-backend.vercel.app/api/testimonials';
     const method = isEditingTest ? 'PUT' : 'POST';
 
     try {
@@ -134,7 +134,7 @@ export default function AdminDashboard({ token, username, onLogout }) {
   const handleDeleteTestimonial = async (id) => {
     if (!window.confirm('Delete this testimonial review?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/testimonials/${id}`, {
+      const res = await fetch(`https://growganicmedia-backend.vercel.app/api/testimonials/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -156,7 +156,7 @@ export default function AdminDashboard({ token, username, onLogout }) {
   const handleDeleteInquiry = async (id) => {
     if (!window.confirm('Delete this user inquiry submission?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/inquiries/${id}`, {
+      const res = await fetch(`https://growganicmedia-backend.vercel.app/api/inquiries/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
