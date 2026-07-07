@@ -1,0 +1,158 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #f5f5f7;
+  --color-paper: #000000;
+  --color-moss: #ffffff;
+  --color-moss-light: #1a1a1d;
+  --color-sprout: #765eff;
+  --color-clay: #a78bfa;
+  --color-stone: #9a9aa3;
+  --color-stone-light: rgba(255, 255, 255, 0.1);
+
+  --font-display: "Stack Sans Text", -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Stack Sans Text", -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", serif;
+}
+
+.instrument-serif-regular {
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.instrument-serif-regular-italic {
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+@layer base {
+  * { border-color: var(--color-stone-light); }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+  ::selection {
+    background-color: var(--color-sprout);
+    color: var(--color-paper);
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
+
+/* ── Marquee ── */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee-scroll 28s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(6px);
+  will-change: opacity, transform, filter;
+  animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Navbar: top se neeche slide-in */
+@keyframes navDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-animate {
+  opacity: 0;
+  animation: navDrop 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Hero content: neeche se upar slide-in — bilkul blur ke bagair */
+@keyframes contentRise {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-rise {
+  opacity: 0;
+  transform: translateY(32px);
+  will-change: opacity, transform;
+  animation: contentRise 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .nav-animate,
+  .content-rise {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.fade-up-1 { animation-delay: 0.2s; }
+.fade-up-2 { animation-delay: 0.4s; }
+.fade-up-3 { animation-delay: 0.6s; }
+
+
+
+/* ══════════════════════════════════════════
+   HERO GLOW
+══════════════════════════════════════════ */
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: initial;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Bottom fade — blends glow into page background */
+.hero-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 960px;
+  background: linear-gradient(to top, black 30%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Animations ── */
+@keyframes orbitSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes heroPulse {
+  0%, 100% { opacity: 0.75; transform: translateX(-50%) scale(1);    }
+  50%       { opacity: 1;    transform: translateX(-50%) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-purple { animation: none; }
+  .hero-orbit  { animation: none; }
+}
