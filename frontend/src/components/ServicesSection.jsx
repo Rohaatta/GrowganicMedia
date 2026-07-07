@@ -221,7 +221,12 @@ builds authority, and attracts qualified opportunities across every platform."
       </>
 
       {/* 2x2 Extra Services Grid */}
-      <div style={styles.newServicesGrid}>
+     <div
+  style={{
+    ...styles.newServicesGrid,
+    gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+  }}
+>
         {extraServices.map((service, i) => (
           <ServiceCard key={i} heading={service.heading} subtext={service.subtext} />
         ))}
@@ -298,12 +303,11 @@ const styles = {
   justifyContent: "center",
   gap: "20px",
 },
-  newServicesGrid: {
+ newServicesGrid: {
     width: "100%",
     maxWidth: "910px",
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
     gap: "28px",
   },
   serviceSmallCard: {
