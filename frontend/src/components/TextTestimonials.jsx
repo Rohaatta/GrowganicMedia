@@ -11,11 +11,11 @@ const testimonials = [
   },
   {
     id: 3,
-    quote: "Our engagement increased significantly after using their designs. Highly recommended!",
+    quote: "Our engagement increased significantly after using their designs. Hassan understood our business, delivered high-quality content on time, and made the entire process simple and stress-free. Highly recommended for businesses looking to grow through their content!",
   },
   {
     id: 4,
-    quote: "Creative, reliable, and always on time. One of the best agencies we've worked with.",
+    quote: "Creative, reliable, and always on time.Hassan understood our business, delivered high-quality content on time, and made the entire process simple and stress-free. One of the best agencies we've worked with.",
   },
   {
     id: 5,
@@ -23,15 +23,15 @@ const testimonials = [
   },
   {
     id: 6,
-    quote: "If you're looking for a content partner who understands both branding and business growth, GrowGanicMedia is an excellent choice. Highly recommended.",
+    quote: "If you're looking for a content partner who understands both branding and business growth, GrowGanicMedia is an excellent choice.Hassan understood our business, delivered high-quality content on time, and made the entire process simple and stress-free. Highly recommended.",
   },
   {
     id: 7,
-    quote: "Professional, responsive, and incredibly talented. Couldn't ask for a better team.",
+    quote: "Professional, responsive, and incredibly talented. Hassan understood our business, delivered high-quality content on time, and made the entire process simple and stress-free. Couldn't ask for a better team.",
   },
   {
     id: 8,
-    quote: "Working with GrowGanicMedia was one of the best decisions we made for our content strategy. Hassan's strategic approach, professionalism, and attention to our business goals made a real difference. Highly recommended for any business looking to grow through purposeful content.",
+    quote: "Working with GrowGanicMedia was one of the best decisions we made for our content strategy. Hassan's strategic approach, professionalism, and attention to our business goals made a real difference. Highly recommended for any business looking to grow.",
   },
   {
     id: 9,
@@ -46,10 +46,10 @@ const col3 = testimonials.slice(6, 9);
 
 const TestimonialCard = ({ item, className = "" }) => (
   <div
-    className={`rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 ${className}`}
+    className={`rounded-3xl border border-white/10 bg-[#0d0d0d] p-5 ${className}`}
   >
-    <p className="text-sm leading-7 text-white/70">{item.quote}</p>
-    <div className="mt-6 flex items-center gap-3">
+    <p className="text-sm leading-6 text-white/70">{item.quote}</p>
+    <div className="mt-5 flex items-center gap-3">
       <div>
         <h4 className="font-medium text-white">{item.name}</h4>
         <p className="text-sm text-white/45">{item.role}</p>
@@ -57,6 +57,14 @@ const TestimonialCard = ({ item, className = "" }) => (
     </div>
   </div>
 );
+
+// Quote ki length ke hisab se width decide karo - chota text chota box, lamba text bada box
+const getCardWidth = (quote) => {
+  const len = quote.length;
+  if (len < 100) return "w-52";
+  if (len < 200) return "w-64";
+  return "w-72";
+};
 
 // Desktop: vertical infinite scroll column
 const ScrollColumn = ({ cards, direction = "up", duration = "20s" }) => {
@@ -95,7 +103,7 @@ const ScrollRow = ({ cards, direction = "left", duration = "30s" }) => {
           <TestimonialCard
             key={`${item.id}-h-${i}`}
             item={item}
-            className="mr-4 w-[80vw] max-w-sm flex-shrink-0"
+            className={`mr-3 ${getCardWidth(item.quote)} flex-shrink-0`}
           />
         ))}
       </div>
