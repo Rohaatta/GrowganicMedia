@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 const testimonials = [
   {
@@ -39,7 +39,7 @@ const testimonials = [
   },
 ];
 
-// 9 cards ko 3 columns mein split karo (desktop ke liye)
+// 9 cards ko 3 columns/rows mein split karo
 const col1 = testimonials.slice(0, 3);
 const col2 = testimonials.slice(3, 6);
 const col3 = testimonials.slice(6, 9);
@@ -77,38 +77,33 @@ const ScrollColumn = ({ cards, direction = "up", duration = "20s" }) => {
   );
 };
 
-// Mobile: horizontal infinite scroll row
-const ScrollRow = ({ cards, duration = "35s" }) => (
-  <div className="relative overflow-hidden">
-    <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-black to-transparent" />
-    <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-black to-transparent" />
+// Mobile: horizontal infinite scroll row - width auto-fits content, capped by max-w
+const ScrollRow = ({ cards, direction = "left", duration = "30s" }) => {
+  const animClass =
+    direction === "left" ? "animate-scroll-left" : "animate-scroll-right";
 
-    <div
-      className="flex animate-scroll-left"
-      style={{ animationDuration: duration, width: "max-content" }}
-    >
-      {[...cards, ...cards].map((item, i) => (
-        <TestimonialCard
-          key={`${item.id}-h-${i}`}
-          item={item}
-          className="mr-4 w-72 flex-shrink-0"
-        />
-      ))}
+  return (
+    <div className="relative overflow-hidden">
+      <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-black to-transparent" />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-black to-transparent" />
+
+      <div
+        className={`flex ${animClass}`}
+        style={{ animationDuration: duration, width: "max-content" }}
+      >
+        {[...cards, ...cards].map((item, i) => (
+          <TestimonialCard
+            key={`${item.id}-h-${i}`}
+            item={item}
+            className="mr-4 w-[80vw] max-w-sm flex-shrink-0"
+          />
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function TestimonialsSection() {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 768 : false
-  );
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <>
       <style>{`
@@ -124,6 +119,10 @@ export default function TestimonialsSection() {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
+        @keyframes scrollRight {
+          0%   { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
         .animate-scroll-up {
           animation: scrollUp linear infinite;
         }
@@ -133,9 +132,13 @@ export default function TestimonialsSection() {
         .animate-scroll-left {
           animation: scrollLeft linear infinite;
         }
+        .animate-scroll-right {
+          animation: scrollRight linear infinite;
+        }
         .animate-scroll-up:hover,
         .animate-scroll-down:hover,
-        .animate-scroll-left:hover {
+        .animate-scroll-left:hover,
+        .animate-scroll-right:hover {
           animation-play-state: paused;
         }
       `}</style>
@@ -155,15 +158,19 @@ export default function TestimonialsSection() {
             </h2>
           </div>
 
-          {isMobile ? (
-            <ScrollRow cards={testimonials} duration="35s" />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <ScrollColumn cards={col1} direction="up" duration="18s" />
-              <ScrollColumn cards={col2} direction="down" duration="22s" />
-              <ScrollColumn cards={col3} direction="up" duration="20s" />
-            </div>
-          )}
+          {/* Mobile: teen horizontal scrolling rows - CSS-only, no JS width detection */}
+          <div className="flex flex-col gap-4 md:hidden">
+            <ScrollRow cards={col1} direction="left" duration="28s" />
+            <ScrollRow cards={col2} direction="right" duration="32s" />
+            <ScrollRow cards={col3} direction="left" duration="30s" />
+          </div>
+
+          {/* Desktop: teen vertical scrolling columns */}
+          <div className="hidden md:grid md:grid-cols-3 gap-4">
+            <ScrollColumn cards={col1} direction="up" duration="18s" />
+            <ScrollColumn cards={col2} direction="down" duration="22s" />
+            <ScrollColumn cards={col3} direction="up" duration="20s" />
+          </div>
         </div>
       </section>
     </>
