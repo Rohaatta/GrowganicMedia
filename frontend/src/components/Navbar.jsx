@@ -21,7 +21,9 @@ export default function Navbar() {
           duration: 1.9,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="group sticky top-4 z-50 px-4"
+        className={`group sticky top-4 z-50 px-4 transition-opacity duration-200 ${
+          open ? "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto" : ""
+        }`}
       >
         <div className="relative mx-auto w-full md:w-fit">
         {/* Hover glow — invisible by default, fades in behind the whole pill on hover */}
@@ -80,7 +82,7 @@ export default function Navbar() {
 
       {/* Mobile full-screen overlay menu */}
       {open && (
-        <div className="fixed inset-x-0 top-0 z-[20] flex flex-col rounded-b-3xl bg-[#0b0b0d] px-3 py-3 pb-6 shadow-xl md:hidden">
+        <div className="fixed inset-x-0 top-0 z-[60] flex flex-col rounded-b-3xl bg-[#0b0b0d] px-3 py-3 pb-6 shadow-xl md:hidden">
           {/* Top row: logo + close */}
           <div className="flex items-center justify-between">
             <Link
