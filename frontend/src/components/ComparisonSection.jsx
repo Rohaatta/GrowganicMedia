@@ -60,7 +60,7 @@ export default function ComparisonSection() {
           <div>
             <h3 className="mb-4 flex items-center justify-center gap-2">
   <img src={logo} alt="GrowGanicMedia logo" className="h-6 w-auto" />
-  <span className="text-2xl font-semibold text-white">GrowganicMedia</span>
+  <span className="text-2xl font-semibold text-white">GrowGanicMedia</span>
 </h3>
             <div
   className="rounded-2xl border border-white/20 bg-black/10 p-6 text-left"

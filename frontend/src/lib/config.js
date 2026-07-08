@@ -6,11 +6,11 @@
 // that uses these values will update automatically.
 
 export const siteConfig = {
-  name: "GrowganicMedia",
-  fullName: "GrowganicMedia",
+  name: "GrowGanicMedia",
+  fullName: "GrowGanicMedia",
   tagline: "Content that grows like it means it.",
   bookingUrl: "https://calendly.com/growganicmediallc/30min",
-  email: "growganicmediallc@gmail.com",
+  email: "growGanicmediallc@gmail.com",
   nav: [
     { label: "Services", href: "/#services" },
     {label:"Short-Form",href:"/#shortform"},
