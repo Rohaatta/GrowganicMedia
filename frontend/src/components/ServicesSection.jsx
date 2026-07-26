@@ -1,838 +1,376 @@
-import React, { useState, useEffect } from 'react';
-import { Video, Award, Inbox, Plus, Trash2, Edit2, LogOut, Check, Eye } from 'lucide-react';
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faYoutube } from "@fortawesome/free-brands-svg-icons";
+import { useEffect, useState } from "react";
+import { useVideos } from "../hooks/useVideos";
 
-export default function AdminDashboard({ token, username, onLogout }) {
-  const [activeTab, setActiveTab] = useState('videos');
-  const [videos, setVideos] = useState([]);
-  const [testimonials, setTestimonials] = useState([]);
-  const [inquiries, setInquiries] = useState([]);
-  const [loading, setLoading] = useState(false);
+const longVideos = [
+  {
+    url: "https://youtu.be/eLgQUkM5gHk?si=xdFrf0DSFl3vLtdE",
+    thumbnail: "https://img.youtube.com/vi/eLgQUkM5gHk/maxresdefault.jpg",
+  },
+  {
+    url: "https://youtu.be/-XLSXdd8ZRA?si=oSPMTRIFZm6Xraxo",
+    thumbnail: "https://img.youtube.com/vi/-XLSXdd8ZRA/maxresdefault.jpg",
+  },
+];
 
-  // Form States
-  const [videoForm, setVideoForm] = useState({ id: null, title: '', category: 'shorts', videoUrl: '', thumbnailUrl: '', duration: '', views: '' });
-  const [testForm, setTestForm] = useState({ id: null, clientName: '', clientCompany: '', clientAvatar: '', quote: '', videoUrl: '', thumbnailUrl: '' });
-  const [isEditingVideo, setIsEditingVideo] = useState(false);
-  const [isEditingTest, setIsEditingTest] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+const shorts = [
+  {
+    url: "https://youtube.com/shorts/_0OlqR8OCBA",
+    thumbnail: "https://img.youtube.com/vi/_0OlqR8OCBA/hqdefault.jpg",
+  },
+  {
+    url: "https://youtube.com/shorts/PD9w8o_jIqE",
+    thumbnail: "https://img.youtube.com/vi/PD9w8o_jIqE/hqdefault.jpg",
+  },
+  {
+    url: "https://youtube.com/shorts/XhgRDXrpGoE",
+    thumbnail: "https://img.youtube.com/vi/XhgRDXrpGoE/hqdefault.jpg",
+  },
+  {
+    url: "https://youtube.com/shorts/-3aKZQvZf_A?si=R4zvS6dpbDiTb466",
+    thumbnail: "https://img.youtube.com/vi/-3aKZQvZf_A/hqdefault.jpg",
+  },
+];
 
-  // Fetch all dashboard data
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const headers = { 'Authorization': `Bearer ${token}` };
-      
-      // Fetch videos
-      const vidRes = await fetch('http://localhost:5000/api/videos');
-      const vidData = await vidRes.json();
-      setVideos(Array.isArray(vidData) ? vidData : []);
+// category field → admin panel mein jo value select hoti hai wahi
+const extraServices = [
+  {
+    heading: "AD Creatives & VSLs",
+    subtext: "Strategic ad creatives and VSLs engineered to capture attention, build instant trust, and guide viewers seamlessly from curiosity to conversion.",
+    category: "vsl",
+  },
+  {
+    heading: "Explainers",
+    subtext: "High-converting ad creatives and VSLs designed to simplify complex SaaS products, capture attention instantly, and turn viewers into paying customers.",
+    category: "explainers",
+  },
+  {
+    heading: "LinkedIn",
+    subtext: "We interview you once and transform it into 12 strategic LinkedIn videos designed to build trust, establish authority, and generate consistent inbound leads from your ideal clients.",
+    category: "linkedin",
+  },
+  {
+    heading: "Podcasts",
+    subtext: "Professional podcast editing focused on clarity, storytelling flow, and audience retention helping your content sound as good as your ideas deserve.",
+    category: "podcast",
+  },
+];
 
-      // Fetch testimonials
-      const testRes = await fetch('http://localhost:5000/api/testimonials');
-      const testData = await testRes.json();
-      setTestimonials(Array.isArray(testData) ? testData : []);
+const Serviceheading = () => (
+  <div id="services" className="mb-12 flex flex-col items-center justify-center text-center">
+    <span className="rounded-full border border-white/20 px-5 py-2 text-xs font-bold tracking-[0.25em] text-white/100">
+      Our Services
+    </span>
+    <h2 className="mt-6 font-display text-4xl leading-tight text-white sm:text-5xl">
+      How we can help{" "}
+      <span className="italic font-serif font-bold text-sprout">you?</span>
+    </h2>
+    <p className="mx-auto mt-3 max-w-md text-medium text-white/70">
+      Authority building YouTube content engineered to expand your reach, deepen audience
+      trust, and create consistent inbound opportunities.
+    </p>
+  </div>
+);
 
-      // Fetch inquiries
-      const inqRes = await fetch('http://localhost:5000/api/inquiries', { headers });
-      const inqData = await inqRes.json();
-      setInquiries(Array.isArray(inqData) ? inqData : []);
-    } catch (err) {
-      console.error('Error fetching dashboard data', err);
-      showMsg('error', 'Failed to fetch data from backend. Make sure server is running.');
-    } finally {
-      setLoading(false);
-    }
+const VideoCard = ({ video, aspect }) => (
+  <div style={{ ...styles.videoWrap, aspectRatio: aspect, width: "100%" }}>
+    <a href={video.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
+      {video.thumbnail && (
+        <img src={video.thumbnail} alt="video thumbnail" style={styles.thumbnail} />
+      )}
+      <div style={styles.playBtn}>
+        <FontAwesomeIcon
+          icon={faYoutube}
+          style={{ color: "rgb(255, 0, 0)", width: "100%", height: "100%" }}
+        />
+      </div>
+    </a>
+  </div>
+);
+
+const MediaCard = ({ heading, subtext, children, gridStyle }) => (
+  <div style={styles.card}>
+    <div style={styles.cornerGlow} />
+    <h2 style={styles.heading}>{heading}</h2>
+    <p style={styles.subtext}>{subtext}</p>
+    <div style={gridStyle}>{children}</div>
+  </div>
+);
+
+// videos prop: real videos from backend for this category
+const ServiceCard = ({ heading, subtext, videos = [] }) => (
+  <div style={styles.serviceSmallCard}>
+    <div style={styles.cornerGlowBlue} />
+    <h2 style={styles.heading}>{heading}</h2>
+    <p style={styles.subtext}>{subtext}</p>
+
+    {videos.length > 0 && (
+      <div style={styles.serviceVideoRow}>
+        {videos.slice(0, 2).map((video, i) => (
+          <VideoCard key={i} video={video} aspect="16/9" />
+        ))}
+      </div>
+    )}
+
+    <div style={{ display: "flex", justifyContent: "center", position: "relative", zIndex: 2 }}>
+      <a
+        href="https://calendly.com/growganicmediallc/30min"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-6 py-3 font-semibold text-white transition hover:bg-gray-400"
+      >
+        Explore pricing ⟶
+      </a>
+    </div>
+  </div>
+);
+
+const ServiceSection = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const { videos: youtubeVideos } = useVideos("youtube");
+  const realYoutubeVideos = youtubeVideos
+    .filter((v) => v.videoUrl)
+    .map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl || "" }));
+  const longVideosToShow = realYoutubeVideos.length > 0 ? realYoutubeVideos : longVideos;
+
+  const { videos: shortsVideos } = useVideos("shorts");
+  const realShorts = shortsVideos
+    .filter((v) => v.videoUrl)
+    .map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl || "" }));
+  const shortsToShow = realShorts.length > 0 ? realShorts : shorts;
+
+  const { videos: vslVideos } = useVideos("vsl");
+  const { videos: podcastVideos } = useVideos("podcast");
+  const { videos: linkedinVideos } = useVideos("linkedin");
+  const { videos: explainerVideos } = useVideos("explainers");
+
+  const toUrlThumb = (list) =>
+    list.filter((v) => v.videoUrl).map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl || "" }));
+
+  const videosByCategory = {
+    vsl: toUrlThumb(vslVideos),
+    podcast: toUrlThumb(podcastVideos),
+    linkedin: toUrlThumb(linkedinVideos),
+    explainers: toUrlThumb(explainerVideos),
   };
 
   useEffect(() => {
-    fetchData();
-  }, [token]);
-
-  const showMsg = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 4000);
-  };
-
-  // --- VIDEO OPERATIONS ---
-  const handleSaveVideo = async (e) => {
-    e.preventDefault();
-    const url = isEditingVideo 
-      ? `http://localhost:5000/api/videos/${videoForm.id}`
-      : 'http://localhost:5000/api/videos';
-    const method = isEditingVideo ? 'PUT' : 'POST';
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(videoForm)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save video');
-
-      showMsg('success', isEditingVideo ? 'Video updated successfully!' : 'New video added successfully!');
-      setVideoForm({ id: null, title: '', category: 'shorts', videoUrl: '', thumbnailUrl: '', duration: '', views: '' });
-      setIsEditingVideo(false);
-      fetchData();
-    } catch (err) {
-      showMsg('error', err.message);
-    }
-  };
-
-  const handleDeleteVideo = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this video?')) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/videos/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Delete failed');
-      showMsg('success', 'Video deleted.');
-      fetchData();
-    } catch (err) {
-      showMsg('error', err.message);
-    }
-  };
-
-  const startEditVideo = (video) => {
-    setVideoForm(video);
-    setIsEditingVideo(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // --- TESTIMONIAL OPERATIONS ---
-  const handleSaveTestimonial = async (e) => {
-    e.preventDefault();
-    const url = isEditingTest 
-      ? `http://localhost:5000/api/testimonials/${testForm.id}`
-      : 'http://localhost:5000/api/testimonials';
-    const method = isEditingTest ? 'PUT' : 'POST';
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(testForm)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save testimonial');
-
-      showMsg('success', isEditingTest ? 'Testimonial updated!' : 'Testimonial added!');
-      setTestForm({ id: null, clientName: '', clientCompany: '', clientAvatar: '', quote: '', videoUrl: '', thumbnailUrl: '' });
-      setIsEditingTest(false);
-      fetchData();
-    } catch (err) {
-      showMsg('error', err.message);
-    }
-  };
-
-  const handleDeleteTestimonial = async (id) => {
-    if (!window.confirm('Delete this testimonial review?')) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/testimonials/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Delete failed');
-      showMsg('success', 'Testimonial deleted.');
-      fetchData();
-    } catch (err) {
-      showMsg('error', err.message);
-    }
-  };
-
-  const startEditTest = (test) => {
-    setTestForm(test);
-    setIsEditingTest(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // --- INQUIRY OPERATIONS ---
-  const handleDeleteInquiry = async (id) => {
-    if (!window.confirm('Delete this user inquiry submission?')) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/inquiries/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Delete failed');
-      showMsg('success', 'Inquiry deleted.');
-      fetchData();
-    } catch (err) {
-      showMsg('error', err.message);
-    }
-  };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div style={styles.dashboardContainer} className="container">
-      {/* Top Header */}
-      <div style={styles.topHeader}>
-        <div>
-          <h2>Agency Control Hub</h2>
-          <p style={{ fontSize: '0.9rem' }}>Logged in as: <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{username}</span></p>
-        </div>
-        <button className="btn btn-secondary" onClick={onLogout} style={styles.logoutBtn}>
-          <LogOut size={16} /> Sign Out
-        </button>
-      </div>
+    <div>
+      <Serviceheading />
 
-      {/* Global alert message */}
-      {message.text && (
-        <div style={{
-          ...styles.messageBox,
-          backgroundColor: message.type === 'success' ? 'rgba(39, 201, 63, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          borderColor: message.type === 'success' ? '#27c93f' : '#ef4444',
-          color: message.type === 'success' ? '#27c93f' : '#ef4444',
-        }}>
-          {message.text}
+      {/* YouTube Videos Card */}
+      <MediaCard
+        heading="YouTube Videos"
+        subtext="YouTube videos that transform your expertise into Authority, Trust, and Qualified Inbound Leads."
+        gridStyle={styles.videoGrid}
+      >
+        <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center" }}>
+          <a
+            href="https://calendly.com/growganicmediallc/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-6 py-3 font-semibold text-white transition hover:bg-gray-400"
+          >
+            Explore pricing ⟶
+          </a>
         </div>
-      )}
+        {longVideosToShow.map((video, i) => (
+          <VideoCard key={i} video={video} aspect="16/9" />
+        ))}
+      </MediaCard>
 
-      {/* Stats Summary Panel */}
-      <div style={styles.statsGrid}>
-        <div className="glass-card" style={styles.statCard}>
-          <div style={styles.statIconWrapper}><Video size={20} color="var(--color-accent)" /></div>
-          <div>
-            <span style={styles.statLabel}>Total Portfolio Videos</span>
-            <h3 style={styles.statValue}>{videos.length}</h3>
-          </div>
-        </div>
-        <div className="glass-card" style={styles.statCard}>
-          <div style={styles.statIconWrapper}><Award size={20} color="var(--color-accent)" /></div>
-          <div>
-            <span style={styles.statLabel}>Video Testimonials</span>
-            <h3 style={styles.statValue}>{testimonials.length}</h3>
-          </div>
-        </div>
-        <div className="glass-card" style={styles.statCard}>
-          <div style={styles.statIconWrapper}><Inbox size={20} color="var(--color-accent)" /></div>
-          <div>
-            <span style={styles.statLabel}>Total Inquiries</span>
-            <h3 style={styles.statValue}>{inquiries.length}</h3>
-          </div>
-        </div>
-      </div>
+      <div style={{ height: "28px" }} />
 
-      {/* Tab Selectors */}
-      <div style={styles.tabsContainer}>
-        <button 
-          onClick={() => { setActiveTab('videos'); setMessage({ type: '', text: '' }); }}
-          style={activeTab === 'videos' ? styles.activeTab : styles.tab}
+      {/* Shorts Card */}
+      <MediaCard
+        heading="Youtube Shorts"
+        subtext="Turn your expertise into high-performing short-form content that increases visibility, builds authority, and attracts qualified opportunities across every platform."
+        gridStyle={{
+          ...styles.shortsGrid,
+          gridTemplateColumns: isMobile ? "repeat(2, minmax(140px, 1fr))" : "repeat(3, 260px)",
+        }}
+      >
+        <div
+          id="shortform"
+          style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: "12px" }}
         >
-          <Video size={16} /> Portfolio Videos ({videos.length})
-        </button>
-        <button 
-          onClick={() => { setActiveTab('testimonials'); setMessage({ type: '', text: '' }); }}
-          style={activeTab === 'testimonials' ? styles.activeTab : styles.tab}
-        >
-          <Award size={16} /> Testimonials ({testimonials.length})
-        </button>
-        <button 
-          onClick={() => { setActiveTab('inquiries'); setMessage({ type: '', text: '' }); }}
-          style={activeTab === 'inquiries' ? styles.activeTab : styles.tab}
-        >
-          <Inbox size={16} /> Client Inquiries ({inquiries.length})
-        </button>
+          <a
+            href="https://calendly.com/growganicmediallc/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#765eff] px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-400 sm:px-6 sm:py-3 sm:text-base"
+          >
+            Explore pricing ⟶
+          </a>
+        </div>
+        {shortsToShow.map((video, i) => (
+          <div
+            key={i}
+            style={
+              !isMobile && i === shortsToShow.length - 1 && shortsToShow.length % 3 === 1
+                ? { gridColumn: "2" }
+                : {}
+            }
+          >
+            <VideoCard video={video} aspect="9/16" />
+          </div>
+        ))}
+      </MediaCard>
+
+      <div style={{ height: "28px" }} />
+
+      {/* 2x2 Extra Services Grid — backend-aware */}
+      <div
+        style={{
+          ...styles.newServicesGrid,
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+        }}
+      >
+        {extraServices.map((service, i) => (
+          <ServiceCard
+            key={i}
+            heading={service.heading}
+            subtext={service.subtext}
+            videos={videosByCategory[service.category] ?? []}
+          />
+        ))}
       </div>
-
-      {loading && <div style={{ textAlign: 'center', padding: '3rem' }}>Updating dashboard records...</div>}
-
-      {/* TAB CONTENT: VIDEOS */}
-      {!loading && activeTab === 'videos' && (
-        <div style={styles.tabGrid}>
-          {/* Add / Edit Form */}
-          <div className="glass-card" style={styles.formCard}>
-            <h3>{isEditingVideo ? 'Edit Video Details' : 'Add New Video'}</h3>
-            <form onSubmit={handleSaveVideo} style={styles.form}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Video Title</label>
-                <input 
-                  type="text" 
-                  value={videoForm.title} 
-                  onChange={(e) => setVideoForm({...videoForm, title: e.target.value})} 
-                  placeholder="e.g. Modern Gym Workout Reel" 
-                  style={styles.input} 
-                  required 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Category</label>
-                <select 
-  value={videoForm.category} 
-  onChange={(e) => setVideoForm({...videoForm, category: e.target.value})}
-  style={styles.input}
->
-  <option value="shorts">Shorts / Reels (Vertical)</option>
-  <option value="youtube">YouTube Long-form (Horizontal)</option>
-  <option value="vsl">VSLs & Ad Creatives</option>
-  <option value="podcast">Podcast Editing</option>
-  <option value="linkedin">LinkedIn</option>
-  <option value="explainers">Explainers</option>
-</select>
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Direct Video URL (MP4)</label>
-                <input 
-                  type="url" 
-                  value={videoForm.videoUrl} 
-                  onChange={(e) => setVideoForm({...videoForm, videoUrl: e.target.value})} 
-                  placeholder="https://assets.mixkit.co/..." 
-                  style={styles.input} 
-                  required 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Thumbnail Image URL</label>
-                <input 
-                  type="url" 
-                  value={videoForm.thumbnailUrl} 
-                  onChange={(e) => setVideoForm({...videoForm, thumbnailUrl: e.target.value})} 
-                  placeholder="https://images.unsplash.com/..." 
-                  style={styles.input} 
-                />
-              </div>
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Duration</label>
-                  <input 
-                    type="text" 
-                    value={videoForm.duration} 
-                    onChange={(e) => setVideoForm({...videoForm, duration: e.target.value})} 
-                    placeholder="0:30" 
-                    style={styles.input} 
-                  />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Views Tag</label>
-                  <input 
-                    type="text" 
-                    value={videoForm.views} 
-                    onChange={(e) => setVideoForm({...videoForm, views: e.target.value})} 
-                    placeholder="120K" 
-                    style={styles.input} 
-                  />
-                </div>
-              </div>
-              <div style={styles.formActions}>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                  <Check size={16} /> {isEditingVideo ? 'Save Changes' : 'Publish Video'}
-                </button>
-                {isEditingVideo && (
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    onClick={() => {
-                      setIsEditingVideo(false);
-                      setVideoForm({ id: null, title: '', category: 'shorts', videoUrl: '', thumbnailUrl: '', duration: '', views: '' });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-
-          {/* List Videos */}
-          <div style={styles.listContainer}>
-            <h3>Active Showcase Items</h3>
-            {videos.length === 0 ? (
-              <p style={{ marginTop: '1rem' }}>No videos added yet.</p>
-            ) : (
-              <div style={styles.listItems}>
-                {videos.map(video => (
-                  <div key={video.id} className="glass-card" style={styles.listItem}>
-                    <img 
-                      src={video.thumbnailUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=150&auto=format&fit=crop"} 
-                      alt="" 
-                      style={styles.listThumb}
-                    />
-                    <div style={styles.listItemInfo}>
-                      <h4 style={styles.listTitle}>{video.title}</h4>
-                      <span style={styles.listTag}>{video.category} • {video.duration || '0:30'}</span>
-                    </div>
-                    <div style={styles.listItemActions}>
-                      <button onClick={() => startEditVideo(video)} style={styles.editBtn} title="Edit"><Edit2 size={14} /></button>
-                      <button onClick={() => handleDeleteVideo(video.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={14} /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB CONTENT: TESTIMONIALS */}
-      {!loading && activeTab === 'testimonials' && (
-        <div style={styles.tabGrid}>
-          {/* Add / Edit Testimonial Form */}
-          <div className="glass-card" style={styles.formCard}>
-            <h3>{isEditingTest ? 'Edit Testimonial' : 'Add New Testimonial'}</h3>
-            <form onSubmit={handleSaveTestimonial} style={styles.form}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Client Name</label>
-                <input 
-                  type="text" 
-                  value={testForm.clientName} 
-                  onChange={(e) => setTestForm({...testForm, clientName: e.target.value})} 
-                  placeholder="Sarah Jenkins" 
-                  style={styles.input} 
-                  required 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Client Company / Channel</label>
-                <input 
-                  type="text" 
-                  value={testForm.clientCompany} 
-                  onChange={(e) => setTestForm({...testForm, clientCompany: e.target.value})} 
-                  placeholder="e.g. Creator Hub" 
-                  style={styles.input} 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Client Avatar URL</label>
-                <input 
-                  type="url" 
-                  value={testForm.clientAvatar} 
-                  onChange={(e) => setTestForm({...testForm, clientAvatar: e.target.value})} 
-                  placeholder="https://images.unsplash.com/..." 
-                  style={styles.input} 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Written Quote Summary</label>
-                <textarea 
-                  value={testForm.quote} 
-                  onChange={(e) => setTestForm({...testForm, quote: e.target.value})} 
-                  placeholder="Highly recommend Hassan! High clickthrough, clean audio..." 
-                  style={{...styles.input, minHeight: '80px'}} 
-                  required 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Feedback Video URL (MP4)</label>
-                <input 
-                  type="url" 
-                  value={testForm.videoUrl} 
-                  onChange={(e) => setTestForm({...testForm, videoUrl: e.target.value})} 
-                  placeholder="https://assets.mixkit.co/..." 
-                  style={styles.input} 
-                  required 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Video Thumbnail URL</label>
-                <input 
-                  type="url" 
-                  value={testForm.thumbnailUrl} 
-                  onChange={(e) => setTestForm({...testForm, thumbnailUrl: e.target.value})} 
-                  placeholder="https://images.unsplash.com/..." 
-                  style={styles.input} 
-                />
-              </div>
-              <div style={styles.formActions}>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                  <Check size={16} /> {isEditingTest ? 'Save Review' : 'Create Review'}
-                </button>
-                {isEditingTest && (
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    onClick={() => {
-                      setIsEditingTest(false);
-                      setTestForm({ id: null, clientName: '', clientCompany: '', clientAvatar: '', quote: '', videoUrl: '', thumbnailUrl: '' });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-
-          {/* List Testimonials */}
-          <div style={styles.listContainer}>
-            <h3>Active Client Feedback</h3>
-            {testimonials.length === 0 ? (
-              <p style={{ marginTop: '1rem' }}>No testimonials added yet.</p>
-            ) : (
-              <div style={styles.listItems}>
-                {testimonials.map(test => (
-                  <div key={test.id} className="glass-card" style={styles.listItem}>
-                    <img 
-                      src={test.clientAvatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=80&auto=format&fit=crop"} 
-                      alt="" 
-                      style={{ ...styles.listThumb, borderRadius: '50%' }}
-                    />
-                    <div style={styles.listItemInfo}>
-                      <h4 style={styles.listTitle}>{test.clientName}</h4>
-                      <span style={styles.listTag}>{test.clientCompany || 'Independent'}</span>
-                    </div>
-                    <div style={styles.listItemActions}>
-                      <button onClick={() => startEditTest(test)} style={styles.editBtn} title="Edit"><Edit2 size={14} /></button>
-                      <button onClick={() => handleDeleteTestimonial(test.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={14} /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB CONTENT: INQUIRIES */}
-      {!loading && activeTab === 'inquiries' && (
-        <div style={styles.inquiriesContainer}>
-          <h3>Client Project Submissions</h3>
-          {inquiries.length === 0 ? (
-            <div className="glass-card" style={styles.emptyInquiries}>
-              <p>No inquiry submissions found. Form responses will show up here.</p>
-            </div>
-          ) : (
-            <div style={styles.inquiriesList}>
-              {inquiries.map((inq) => (
-                <div key={inq.id} className="glass-card" style={styles.inquiryCard}>
-                  <div style={styles.inquiryHeader}>
-                    <div>
-                      <h4 style={styles.inquiryName}>{inq.name}</h4>
-                      <a href={`mailto:${inq.email}`} style={styles.inquiryEmail}>{inq.email}</a>
-                    </div>
-                    <div style={styles.inquiryMeta}>
-                      <span style={styles.inquiryDate}>{new Date(inq.createdAt).toLocaleString()}</span>
-                      <button 
-                        onClick={() => handleDeleteInquiry(inq.id)} 
-                        style={styles.inquiryDeleteBtn}
-                        title="Delete inquiry"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  <p style={styles.inquiryMessage}>{inq.message}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
-}
-
-const styles = {
-  dashboardContainer: {
-    paddingTop: '3rem',
-    paddingBottom: '6rem',
-  },
-  topHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2.5rem',
-    borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '1.5rem',
-  },
-  logoutBtn: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.85rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-  },
-  messageBox: {
-    padding: '0.8rem 1.2rem',
-    border: '1px solid',
-    borderRadius: '10px',
-    fontSize: '0.9rem',
-    fontWeight: 500,
-    marginBottom: '2rem',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '1.5rem',
-    marginBottom: '3rem',
-  },
-  statCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    padding: '1.5rem',
-    backgroundColor: 'var(--bg-secondary)',
-    borderRadius: '16px',
-  },
-  statIconWrapper: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(59, 130, 246, 0.08)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(59, 130, 246, 0.1)',
-  },
-  statLabel: {
-    fontSize: '0.75rem',
-    color: 'var(--color-secondary)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  statValue: {
-    fontSize: '1.5rem',
-    fontWeight: 800,
-    color: '#ffffff',
-    marginTop: '0.2rem',
-  },
-  tabsContainer: {
-    display: 'flex',
-    gap: '0.8rem',
-    borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '1px',
-    marginBottom: '2.5rem',
-    flexWrap: 'wrap',
-  },
-  tab: {
-    background: 'none',
-    border: 'none',
-    color: 'var(--color-secondary)',
-    padding: '0.8rem 1.2rem',
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    position: 'relative',
-    transition: 'color 0.2s',
-  },
-  activeTab: {
-    background: 'none',
-    border: 'none',
-    color: 'var(--color-accent)',
-    padding: '0.8rem 1.2rem',
-    fontSize: '0.9rem',
-    fontWeight: 700,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    position: 'relative',
-    borderBottom: '2px solid var(--color-accent)',
-  },
-  tabGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1.2fr 1fr',
-    gap: '3rem',
-  },
-  formCard: {
-    padding: '2rem',
-    backgroundColor: 'var(--bg-secondary)',
-    borderRadius: '16px',
-    height: 'fit-content',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.2rem',
-    marginTop: '1.5rem',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.4rem',
-  },
-  formRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
-  },
-  label: {
-    fontSize: '0.8rem',
-    fontWeight: 600,
-    color: 'var(--color-secondary)',
-  },
-  input: {
-    backgroundColor: 'var(--bg-input)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '8px',
-    padding: '0.65rem 0.9rem',
-    color: '#ffffff',
-    fontSize: '0.9rem',
-    outline: 'none',
-    width: '100%',
-  },
-  formActions: {
-    display: 'flex',
-    gap: '0.8rem',
-    marginTop: '0.5rem',
-  },
-  listContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  listItems: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.8rem',
-    marginTop: '1rem',
-  },
-  listItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    padding: '0.8rem 1.2rem',
-    backgroundColor: 'var(--bg-secondary)',
-    borderRadius: '12px',
-  },
-  listThumb: {
-    width: '46px',
-    height: '46px',
-    objectFit: 'cover',
-    borderRadius: '6px',
-    backgroundColor: '#111',
-  },
-  listItemInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  listTitle: {
-    fontSize: '0.9rem',
-    fontWeight: 700,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  listTag: {
-    fontSize: '0.75rem',
-    color: '#64748b',
-    marginTop: '0.1rem',
-    display: 'block',
-    textTransform: 'uppercase',
-  },
-  listItemActions: {
-    display: 'flex',
-    gap: '0.5rem',
-  },
-  editBtn: {
-    background: 'rgba(59, 130, 246, 0.1)',
-    border: '1px solid rgba(59, 130, 246, 0.2)',
-    color: '#60a5fa',
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  deleteBtn: {
-    background: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-    color: '#ef4444',
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  inquiriesContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  emptyInquiries: {
-    padding: '3rem',
-    textAlign: 'center',
-    color: 'var(--color-secondary)',
-    borderRadius: '16px',
-  },
-  inquiriesList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.2rem',
-  },
-  inquiryCard: {
-    padding: '2rem',
-    backgroundColor: 'var(--bg-secondary)',
-    borderRadius: '16px',
-  },
-  inquiryHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-    paddingBottom: '1rem',
-    marginBottom: '1rem',
-  },
-  inquiryName: {
-    fontSize: '1.05rem',
-    fontWeight: 700,
-    color: '#ffffff',
-  },
-  inquiryEmail: {
-    fontSize: '0.85rem',
-    color: 'var(--color-accent)',
-    textDecoration: 'none',
-  },
-  inquiryMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-  },
-  inquiryDate: {
-    fontSize: '0.78rem',
-    color: '#64748b',
-  },
-  inquiryDeleteBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#ef4444',
-    cursor: 'pointer',
-    opacity: 0.7,
-    transition: 'opacity 0.2s',
-    padding: '2px',
-  },
-  inquiryMessage: {
-    fontSize: '0.95rem',
-    color: '#e2e8f0',
-    whiteSpace: 'pre-wrap',
-    lineHeight: '1.6',
-  }
 };
 
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement("style");
-  styleSheet.innerText = `
-    .editBtn:hover {
-      background-color: var(--color-accent) !important;
-      color: white !important;
-    }
-    .deleteBtn:hover {
-      background-color: #ef4444 !important;
-      color: white !important;
-    }
-    .inquiryDeleteBtn:hover {
-      opacity: 1 !important;
-    }
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24Hz' fill='none'/></svg>");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 30px !important;
-    }
-  `;
-  document.head.appendChild(styleSheet);
-}
+const styles = {
+  card: {
+    width: "100%",
+    maxWidth: "910px",
+    margin: "0 auto",
+    background: "#090909",
+    borderRadius: "28px",
+    padding: "44px",
+    textAlign: "center",
+    position: "relative",
+    overflow: "hidden",
+    border: "1px solid rgba(255, 255, 255, 0.18)",
+  },
+  cornerGlow: {
+    position: "absolute",
+    top: "-120px",
+    right: "-80px",
+    width: "200px",
+    height: "200px",
+    background: "radial-gradient(circle, #765eff, transparent 100%)",
+    filter: "blur(50px)",
+    pointerEvents: "none",
+    zIndex: 1,
+  },
+  cornerGlowBlue: {
+    position: "absolute",
+    top: "-120px",
+    left: "-80px",
+    width: "200px",
+    height: "200px",
+    background: "radial-gradient(circle, #145984, transparent 100%)",
+    filter: "blur(50px)",
+    pointerEvents: "none",
+    zIndex: 1,
+  },
+  heading: {
+    color: "#ffffff",
+    fontSize: "34px",
+    fontWeight: 700,
+    letterSpacing: "-0.5px",
+    marginBottom: "14px",
+    position: "relative",
+    zIndex: 2,
+  },
+  subtext: {
+    color: "#828282",
+    fontSize: "15px",
+    lineHeight: 1.6,
+    maxWidth: "460px",
+    margin: "0 auto 28px",
+    position: "relative",
+    zIndex: 2,
+  },
+  videoGrid: {
+    position: "relative",
+    zIndex: 2,
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "20px",
+  },
+  shortsGrid: {
+    position: "relative",
+    zIndex: 2,
+    display: "grid",
+    justifyContent: "center",
+    gap: "20px",
+  },
+  newServicesGrid: {
+    width: "100%",
+    maxWidth: "910px",
+    margin: "0 auto",
+    display: "grid",
+    gap: "28px",
+  },
+  serviceSmallCard: {
+    background: "#090909",
+    borderRadius: "28px",
+    padding: "44px",
+    textAlign: "center",
+    position: "relative",
+    overflow: "hidden",
+    border: "1px solid rgba(255, 255, 255, 0.18)",
+  },
+  serviceVideoRow: {
+    position: "relative",
+    zIndex: 2,
+    display: "flex",
+    gap: "14px",
+    justifyContent: "center",
+    marginBottom: "24px",
+  },
+  videoWrap: {
+    position: "relative",
+    borderRadius: "16px",
+    overflow: "hidden",
+    background: "#000",
+    boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
+  },
+  videoLink: {
+    display: "block",
+    width: "100%",
+    height: "100%",
+    position: "relative",
+    textDecoration: "none",
+  },
+  thumbnail: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
+  playBtn: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "78px",
+    height: "55px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "transform .25s ease",
+  },
+};
+
+export default ServiceSection;
