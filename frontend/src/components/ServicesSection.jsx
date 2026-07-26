@@ -32,29 +32,29 @@ const shorts = [
     url: "https://youtube.com/shorts/-3aKZQvZf_A?si=R4zvS6dpbDiTb466",
     thumbnail: "https://img.youtube.com/vi/-3aKZQvZf_A/hqdefault.jpg",
   },
-  
 ];
 
+// category field → admin panel mein jo value select hoti hai wahi
 const extraServices = [
   {
     heading: "AD Creatives & VSLs",
-    subtext:
-      "Strategic ad creatives and VSLs engineered to capture attention, build instant trust, and guide viewers seamlessly from curiosity to conversion.",
+    subtext: "Strategic ad creatives and VSLs engineered to capture attention, build instant trust, and guide viewers seamlessly from curiosity to conversion.",
+    category: "vsl",
   },
   {
     heading: "Explainers",
-    subtext:
-      "High-converting ad creatives and VSLs designed to simplify complex SaaS products, capture attention instantly, and turn viewers into paying customers.",
+    subtext: "High-converting ad creatives and VSLs designed to simplify complex SaaS products, capture attention instantly, and turn viewers into paying customers.",
+    category: "explainers",
   },
   {
     heading: "LinkedIn",
-    subtext:
-      "We interview you once and transform it into 12 strategic LinkedIn videos designed to build trust, establish authority, and generate consistent inbound leads from your ideal clients.",
+    subtext: "We interview you once and transform it into 12 strategic LinkedIn videos designed to build trust, establish authority, and generate consistent inbound leads from your ideal clients.",
+    category: "linkedin",
   },
   {
     heading: "Podcasts",
-    subtext:
-      "Professional podcast editing focused on clarity, storytelling flow, and audience retention helping your content sound as good as your ideas deserve.",
+    subtext: "Professional podcast editing focused on clarity, storytelling flow, and audience retention helping your content sound as good as your ideas deserve.",
+    category: "podcast",
   },
 ];
 
@@ -63,28 +63,23 @@ const Serviceheading = () => (
     <span className="rounded-full border border-white/20 px-5 py-2 text-xs font-bold tracking-[0.25em] text-white/100">
       Our Services
     </span>
-    
     <h2 className="mt-6 font-display text-4xl leading-tight text-white sm:text-5xl">
       How we can help{" "}
       <span className="italic font-serif font-bold text-sprout">you?</span>
     </h2>
     <p className="mx-auto mt-3 max-w-md text-medium text-white/70">
-      Authority building YouTube content engineered to expand your reach, deepen audience 
-trust, and create consistent inbound opportunities.
+      Authority building YouTube content engineered to expand your reach, deepen audience
+      trust, and create consistent inbound opportunities.
     </p>
   </div>
 );
 
 const VideoCard = ({ video, aspect }) => (
-  <div
-  style={{
-    ...styles.videoWrap,
-    aspectRatio: aspect,
-    width: "100%",
-  }}
->
+  <div style={{ ...styles.videoWrap, aspectRatio: aspect, width: "100%" }}>
     <a href={video.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
-      <img src={video.thumbnail} alt="YouTube video thumbnail" style={styles.thumbnail} />
+      {video.thumbnail && (
+        <img src={video.thumbnail} alt="video thumbnail" style={styles.thumbnail} />
+      )}
       <div style={styles.playBtn}>
         <FontAwesomeIcon
           icon={faYoutube}
@@ -104,11 +99,21 @@ const MediaCard = ({ heading, subtext, children, gridStyle }) => (
   </div>
 );
 
-const ServiceCard = ({ heading, subtext }) => (
+// videos prop: real videos from backend for this category
+const ServiceCard = ({ heading, subtext, videos = [] }) => (
   <div style={styles.serviceSmallCard}>
     <div style={styles.cornerGlowBlue} />
     <h2 style={styles.heading}>{heading}</h2>
     <p style={styles.subtext}>{subtext}</p>
+
+    {videos.length > 0 && (
+      <div style={styles.serviceVideoRow}>
+        {videos.slice(0, 2).map((video, i) => (
+          <VideoCard key={i} video={video} aspect="16/9" />
+        ))}
+      </div>
+    )}
+
     <div style={{ display: "flex", justifyContent: "center", position: "relative", zIndex: 2 }}>
       <a
         href="https://calendly.com/growganicmediallc/30min"
@@ -125,27 +130,36 @@ const ServiceCard = ({ heading, subtext }) => (
 const ServiceSection = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Real videos added via the admin panel.
-  // Each falls back to the hardcoded demo set until real ones exist.
   const { videos: youtubeVideos } = useVideos("youtube");
   const realYoutubeVideos = youtubeVideos
-    .filter((v) => v.videoUrl && v.thumbnailUrl)
-    .map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl }));
+    .filter((v) => v.videoUrl)
+    .map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl || "" }));
   const longVideosToShow = realYoutubeVideos.length > 0 ? realYoutubeVideos : longVideos;
 
   const { videos: shortsVideos } = useVideos("shorts");
   const realShorts = shortsVideos
-    .filter((v) => v.videoUrl && v.thumbnailUrl)
-    .map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl }));
+    .filter((v) => v.videoUrl)
+    .map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl || "" }));
   const shortsToShow = realShorts.length > 0 ? realShorts : shorts;
 
+  const { videos: vslVideos } = useVideos("vsl");
+  const { videos: podcastVideos } = useVideos("podcast");
+  const { videos: linkedinVideos } = useVideos("linkedin");
+  const { videos: explainerVideos } = useVideos("explainers");
+
+  const toUrlThumb = (list) =>
+    list.filter((v) => v.videoUrl).map((v) => ({ url: v.videoUrl, thumbnail: v.thumbnailUrl || "" }));
+
+  const videosByCategory = {
+    vsl: toUrlThumb(vslVideos),
+    podcast: toUrlThumb(podcastVideos),
+    linkedin: toUrlThumb(linkedinVideos),
+    explainers: toUrlThumb(explainerVideos),
+  };
+
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -153,16 +167,15 @@ const ServiceSection = () => {
     <div>
       <Serviceheading />
 
-      {/* Long Videos Card */}
+      {/* YouTube Videos Card */}
       <MediaCard
         heading="YouTube Videos"
-        subtext="YouTube videos that transform your expertise into Authority, Trust, and Qualified 
-Inbound Leads."
+        subtext="YouTube videos that transform your expertise into Authority, Trust, and Qualified Inbound Leads."
         gridStyle={styles.videoGrid}
       >
-        <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: "0px" }}>
-          
-          <a  href="https://calendly.com/growganicmediallc/30min"
+        <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center" }}>
+          <a
+            href="https://calendly.com/growganicmediallc/30min"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-[#765eff] px-6 py-3 font-semibold text-white transition hover:bg-gray-400"
@@ -178,57 +191,57 @@ Inbound Leads."
       <div style={{ height: "28px" }} />
 
       {/* Shorts Card */}
-      <>
-        <MediaCard
-          heading="Youtube Shorts"
-          subtext="Turn your expertise into high-performing short-form content that increases visibility, 
-builds authority, and attracts qualified opportunities across every platform."
+      <MediaCard
+        heading="Youtube Shorts"
+        subtext="Turn your expertise into high-performing short-form content that increases visibility, builds authority, and attracts qualified opportunities across every platform."
         gridStyle={{
-  ...styles.shortsGrid,
-  gridTemplateColumns: isMobile
-    ? "repeat(2, minmax(140px, 1fr))"
-    : "repeat(3, 260px)",
-}}
+          ...styles.shortsGrid,
+          gridTemplateColumns: isMobile ? "repeat(2, minmax(140px, 1fr))" : "repeat(3, 260px)",
+        }}
+      >
+        <div
+          id="shortform"
+          style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: "12px" }}
         >
-          <div
-            id="shortform"
-            style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: "12px" }}
+          <a
+            href="https://calendly.com/growganicmediallc/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#765eff] px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-400 sm:px-6 sm:py-3 sm:text-base"
           >
-            
-           <a   href="https://calendly.com/growganicmediallc/30min"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#765eff] px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-400 sm:px-6 sm:py-3 sm:text-base"
-            >
-              Explore pricing ⟶
-            </a>
+            Explore pricing ⟶
+          </a>
+        </div>
+        {shortsToShow.map((video, i) => (
+          <div
+            key={i}
+            style={
+              !isMobile && i === shortsToShow.length - 1 && shortsToShow.length % 3 === 1
+                ? { gridColumn: "2" }
+                : {}
+            }
+          >
+            <VideoCard video={video} aspect="9/16" />
           </div>
-          {shortsToShow.map((video, i) => (
-  <div
-    key={i}
-    style={
-      !isMobile && i === shortsToShow.length - 1 && shortsToShow.length % 3 === 1
-        ? { gridColumn: "2" }
-        : {}
-    }
-  >
-    <VideoCard video={video} aspect="9/16" />
-  </div>
-))}
+        ))}
+      </MediaCard>
 
-        </MediaCard>
-        <div style={{ height: "28px" }} />
-      </>
+      <div style={{ height: "28px" }} />
 
-      {/* 2x2 Extra Services Grid */}
-     <div
-  style={{
-    ...styles.newServicesGrid,
-    gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
-  }}
->
+      {/* 2x2 Extra Services Grid — backend-aware */}
+      <div
+        style={{
+          ...styles.newServicesGrid,
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+        }}
+      >
         {extraServices.map((service, i) => (
-          <ServiceCard key={i} heading={service.heading} subtext={service.subtext} />
+          <ServiceCard
+            key={i}
+            heading={service.heading}
+            subtext={service.subtext}
+            videos={videosByCategory[service.category] ?? []}
+          />
         ))}
       </div>
     </div>
@@ -296,14 +309,13 @@ const styles = {
     gap: "20px",
   },
   shortsGrid: {
-  position: "relative",
-  zIndex: 2,
-  display: "grid",
-  gridTemplateColumns: "repeat(3, 220px)",
-  justifyContent: "center",
-  gap: "20px",
-},
- newServicesGrid: {
+    position: "relative",
+    zIndex: 2,
+    display: "grid",
+    justifyContent: "center",
+    gap: "20px",
+  },
+  newServicesGrid: {
     width: "100%",
     maxWidth: "910px",
     margin: "0 auto",
@@ -318,6 +330,14 @@ const styles = {
     position: "relative",
     overflow: "hidden",
     border: "1px solid rgba(255, 255, 255, 0.18)",
+  },
+  serviceVideoRow: {
+    position: "relative",
+    zIndex: 2,
+    display: "flex",
+    gap: "14px",
+    justifyContent: "center",
+    marginBottom: "24px",
   },
   videoWrap: {
     position: "relative",
