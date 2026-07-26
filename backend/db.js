@@ -1,12 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import postgres from "postgres";
 import dotenv from "dotenv";
 dotenv.config();
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
-  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env");
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL must be set in .env");
 }
 
-export const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const sql = postgres(process.env.DATABASE_URL, { ssl: "require" });
+
+export default sql;

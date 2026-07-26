@@ -1,58 +1,58 @@
 import express from "express";
-import { supabase } from "../db.js";
+import sql from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Public — frontend reads this
 router.get("/", async (req, res) => {
-  const { data, error } = await supabase
-    .from("videos")
-    .select("*")
-    .order("createdAt", { ascending: false });
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+  try {
+    const videos = await sql`SELECT * FROM videos ORDER BY "createdAt" DESC`;
+    res.json(videos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Admin only
 router.post("/", requireAuth, async (req, res) => {
   const { title, category, videoUrl, thumbnailUrl, duration, views } = req.body || {};
+  if (!title || !videoUrl) return res.status(400).json({ error: "title and videoUrl are required" });
 
-  if (!title || !videoUrl) {
-    return res.status(400).json({ error: "title and videoUrl are required" });
+  try {
+    const [video] = await sql`
+      INSERT INTO videos (title, category, "videoUrl", "thumbnailUrl", duration, views)
+      VALUES (${title}, ${category || "youtube"}, ${videoUrl}, ${thumbnailUrl || ""}, ${duration || ""}, ${views || ""})
+      RETURNING *
+    `;
+    res.status(201).json(video);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const { data, error } = await supabase
-    .from("videos")
-    .insert([{ title, category: category || "youtube", videoUrl, thumbnailUrl: thumbnailUrl || "", duration: duration || "", views: views || "" }])
-    .select();
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json(data[0]);
 });
 
 router.put("/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { title, category, videoUrl, thumbnailUrl, duration, views } = req.body || {};
 
-  const { data, error } = await supabase
-    .from("videos")
-    .update({ title, category, videoUrl, thumbnailUrl, duration, views })
-    .eq("id", id)
-    .select();
-
-  if (error) return res.status(500).json({ error: error.message });
-  if (!data.length) return res.status(404).json({ error: "Video not found" });
-  res.json(data[0]);
+  try {
+    const [video] = await sql`
+      UPDATE videos SET title=${title}, category=${category}, "videoUrl"=${videoUrl},
+      "thumbnailUrl"=${thumbnailUrl || ""}, duration=${duration || ""}, views=${views || ""}
+      WHERE id=${id} RETURNING *
+    `;
+    if (!video) return res.status(404).json({ error: "Video not found" });
+    res.json(video);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
-  const { id } = req.params;
-  const { error } = await supabase.from("videos").delete().eq("id", id);
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true });
+  try {
+    await sql`DELETE FROM videos WHERE id=${req.params.id}`;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;
